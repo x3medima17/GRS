@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% set axes = ['heading','pitch','roll'] %}
+{% set fingers = ['wrist','thumb','index','middle','ring','pinky'] %}
+{% set colors = {'heading':'green','pitch':'yellow','roll':'red'} %}
+	
+<div class="col-md-6" >
+	<div class="box box-primary" style="height:430px;">
+		<div class="box-header">
+			<h3 class="box-title">Add gesure</h3>
+		<p>Setup source and collect training set for your gesture</p>
+		</div>
+		<div class="box-body">
+			<div class="callout callout-success" id="result" style="display:none;height:49px;margin-top:-17px;">
+                    <h4> </h4>
+            </div>
+
+			<div class="form-group">
+				<label for="source">Source:</label>
+				<input type="text" class="form-control" id="source" placeholder="Enter source" value="ws://localhost:9090/ws">
+			</div>
+
+			<div class="form-group">
+				<label for="name">Name: </label>
+				<input type="text" class="form-control" id="name" placeholder="Enter name" >
+			</div>
+			<button class="btn btn-block btn-primary" id="collect">Collect data</button>
+			<div id="status" style="display:none">
+				<h3> Sets collected: <span id="nsets">0</span></h3>
+			</div>
+			<button class="btn btn-block btn-success" id="add" style="display:none">Add gesture</button>
+		</div>
+	</div>
+</div>
+
+{% for finger in fingers %}
+	<div class="col-md-2">
+		<div class="box box-solid">
+			<div class="box-header with-border">
+				<h3 class="box-title" style="text-transform: capitalize;">{{finger}}</h3>
+			</div>
+			<div class="box-body text-center">
+				{% for axis in axes %}
+				<div class="progress vertical progress-sm" style="height:150px; margin-bottom:5px">
+					<div class="progress-bar progress-bar-{{ colors[axis] }}" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="height: 0%" id="{{ finger+'-'+axis }}">
+						<span class="sr-only">100%</span>
+					</div>
+				</div>
+				{% end %}
+				
+			</div>
+		</div>
+	</div>
+{% end %}
+
+{% end %}
+
+
+{% block script %}
+<script type="text/javascript">
+$(function(){
+	var training_set = []
+	
+	$("#add").click(function(){
+		var gesture = $("#name").val()
+		var training_data = JSON.stringify(training_set) 
+		$.post("/gestures/add",{training_data:training_data,gesture:gesture},function(data){
+			data = JSON.parse(data)
+			var clas = "callout callout-danger"
+			if(data.status == 0)
+				clas = "callout callout-success"
+			$("#result").attr("class",clas)
+			$("#result h4").text(data.message)
+			$("#result").show()
+			console.log(data.message)
+		})
+
+	})
+	
+	$("#collect").click(function(){
+		$("#status").show()
+
+		source = $("#source").val()
+		var axes = ['heading','pitch','roll'] 
+		var fingers = ['wrist','thumb','index','middle','ring','pinky']
+		var ws = new WebSocket(source)
+		var nsets = 0
+		training_set = []
+
+		ws.onopen = function()
+		{
+			// ws.send("Hello world")
+			console.log("Connection oppened")
+		}
+
+		ws.onmessage = function(evt)
+		{
+			coeff =  15.9154943092 
+			// console.log(evt.data)
+			message = JSON.parse(evt.data)
+			raw = message["raw"]
+			data = message["data"]
+			console.log(raw)
+			fingers.forEach(function(finger){
+				axes.forEach(function(axis){
+					val = Number(data[finger][axis]) + Math.PI
+					val *= 15.91	
+
+					console.log(finger,axis,"Initial: ",data[finger][axis],"Scaled: ",val)
+					$("#"+finger+"-"+axis).css("height",val+"%")
+				})
+			})
+			nsets++
+			$("#nsets").text(nsets)
+			training_set.push(raw)
+			if(nsets == 200)
+			{
+				ws.close()
+				$("#add").show()
+				console.log(training_set)
+			}
+
+		}
+
+		ws.onclose = function()
+		{
+			console.log("Connection closed")
+		}
+	})
+	
+})	
+
+</script>
+{% end %}
+
+{% block style %}
+<style type="text/css">
+.content{
+	height: 500px;
+}
+
+
+</style>
+{% end %}
