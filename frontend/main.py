@@ -8,6 +8,7 @@ import grs
 import sys
 import json
 
+from bson.json_util import dumps
 import tornado.options
 from tornado.options import define, options
 
@@ -26,7 +27,9 @@ class Application(tornado.web.Application):
             (r"/",MainHandler),
 
             (r"/gestures",GesturesHadler),
-            (r"/gestures/add",GesturesAddHandler)
+            (r"/gestures/add",GesturesAddHandler),
+            (r"/model",ModelHandler),
+            (r"/test",TestHadnler)
         ]
         
         settings = dict(
@@ -83,12 +86,27 @@ class MainHandler(BaseHandler):
             )
         self.render("index.html",**page_data)
 
+
+class TestHadnler(BaseHandler):
+    def get(self):
+        self.render("test.html")
+
+class ModelHandler(BaseHandler):
+    def get(self):
+        page_data = dict(
+            title = "Model"
+            )
+        self.render("model.html",**page_data)
+
+
 class GesturesHadler(BaseHandler):
     def get(self):
         page_data = dict(
             title = "GRS Home"
             )
-        self.render("gestures.html",**page_data)
+        gesture = self.get_argument("gesture",None)
+        self.write(dumps(db.gestures.find_one({"name":gesture})))
+        #self.render("gestures.html",**page_data)
 
 
 class GesturesAddHandler(BaseHandler):

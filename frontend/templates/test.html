@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Hello World (Three.js)</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+</head>
+<body>
+
+<script src="/static/js/three/Three.js"></script>
+<script src="/static/js/three/Detector.js"></script>
+<script src="/static/js/three/THREEx.KeyboardState.js"></script>
+<script src="/static/js/three/THREEx.FullScreen.js"></script>
+<script src="/static/js/three/THREEx.WindowResize.js"></script>
+<script src="/static/js/three/OrbitControls.js"></script>
+<script src="/static/js/three/Stats.js"></script>
+<script src="/static/js/three/hand_data.js"></script>
+<script src="/static/js/three/setup.js"></script>
+<script src="/static/js/three/geometry.js"></script>
+<script src="/static/js/three/GRS.js"></script>
+<script src="/static/js/jquery-1.9.1.js"></script>
+
+
+<div id="ThreeJS" style="z-index: 1; position: absolute; left:0px; top:0px"></div>
+
+<script>
+	// Macro objects
+	var pi = Math.PI
+	var container, scene, camera, renderer, controls, stats
+	var keyboard = new THREEx.KeyboardState()	
+	var clock = new THREE.Clock()
+	var light, ambientLight
+	var car,cylinder,group,pivot,tick=0.02
+	var rotation = {
+		heading : 0,
+		pitch : 0,
+		roll : 0
+	}
+	var tip0,tip1,cylinder,r,d=100;
+
+
+	var phi = pi/4
+	var theta = pi/4;
+	var sphere,alpha=0;
+	
+	function init(){
+
+		setup();
+		///// Gemetry ////
+
+
+		tip0 = new THREE.Mesh(tipSphereGeometry,sphereMaterial);
+		tip1 = new THREE.Mesh(tipSphereGeometry, sphereMaterial);
+		
+		x = d * Math.sin(phi)* Math.sin(theta)
+		y = d * Math.cos(phi)
+		z = d * Math.sin(phi) * Math.cos(theta)
+		tip1.position.set(x,y,z)
+		console.log(x,y,z)
+		var curr_geo = new THREE.CylinderGeometry(1,4,d,32,32,false)
+		curr_geo.applyMatrix( new THREE.Matrix4().makeTranslation( 0, d / 2, 0 ) );
+		curr_geo.applyMatrix( new THREE.Matrix4().makeRotationX(	 THREE.Math.degToRad( 90 ) ) );
+	
+		cylinder = new THREE.Mesh(curr_geo, cylinderMaterial);
+		cylinder.lookAt(tip1.position)
+		scene.add(tip0)
+		scene.add(tip1)
+		scene.add(cylinder)
+	
+	}
+
+
+function animate(){
+	requestAnimationFrame(animate)
+	render()
+	
+	x = d * Math.sin(phi)* Math.sin(theta)
+	y = d * Math.cos(phi)
+	z = d * Math.sin(phi) * Math.cos(theta)
+	tip1.position.set(x,y,z)
+	cylinder.lookAt(tip1.position)
+	update()
+}
+
+function update(){
+	// fe[0].position.x += 1
+	var delta = clock.getDelta()
+	// tip1.position.x 
+	controls.update()
+	stats.update()
+}
+
+function render(){
+	renderer.render(scene,camera)
+}
+
+function sin(x){
+	var alpha =  (x-90) * (Math.PI/180)
+	return Math.sin(alpha)
+}
+
+
+function cos(x){
+	var alpha = (x-90) * (Math.PI/180)
+	return Math.cos(alpha)
+}
+
+function rad(x)
+{
+	return x * (Math.PI/180)
+}
+
+init()
+animate()
+
+var ws = new WebSocket ("ws://188.166.48.28:8080/websocket")
+ws.onopen = function(){
+	console.log("Done")
+}
+
+ws.onmessage = function(e)
+{
+	// console.log(e.data)
+	if (e.data == "Init done")
+		return 
+	data = JSON.parse(e.data)
+	car.rotation.x = data.wrist.heading
+	car.rotation.y = data.wrist.pitch
+	car.rotation.z = data.wrist.roll
+	GRS.wrist.heading = data.wrist.heading * -1
+	// GRS.wrist.pitch = data.wrist.pitch
+	// GRS.index.pitch = data.index.pitch
+	// GRS.middle.pitch = data.middle.pitch
+	// GRS.ring.pitch = data.ring.pitch
+	// GRS.pinky.pitch = data.pinky.pitch
+	
+	console.log(GRS.wrist.pitch)
+}
+
+
+ws.onclose = function()
+{
+	console.log("Closed")
+}
+</script>
+
+
+<script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#heading, #pitch, #roll").slider({
+		min:0,
+		max: Math.PI*2*	1000,	
+		value: 0,
+		slide:function(event,ui){
+			angle = $(this).attr("angle")
+			console.log(angle)
+			window[angle] = ui.value / 1000.0
+			console.log(ui.value / 1000.0)
+			
+		}
+	})
+})	
+
+</script>
+<div style="position:absolute;width:200px; height:70px;top:10px;left:20px; z-index:9999">
+	 Heading (theta): <div id="heading" angle="theta"></div><br>
+	 Pitch (phi): <div id="pitch" angle = "phi"></div><br>
+	 Roll: <div id="roll"></div>
+</div>
+</body>
+</html>
