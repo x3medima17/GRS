@@ -43,7 +43,7 @@
 	var phi = 0
 	var theta = 0;
 	var sphere,alpha=0;
-	
+	var ws;	
 	function init(){
 
 		setup();
@@ -114,34 +114,32 @@ function rad(x)
 init()
 animate()
 
-var ws = new WebSocket ("ws://188.166.48.28:8080/websocket")
-ws.onopen = function(){
-	console.log("Done")
-}
-
-ws.onmessage = function(e)
+function open_ws(source)
 {
-	// console.log(e.data)
-	if (e.data == "Init done")
-		return 
-	data = JSON.parse(e.data)
-	car.rotation.x = data.wrist.heading
-	car.rotation.y = data.wrist.pitch
-	car.rotation.z = data.wrist.roll
-	GRS.wrist.heading = data.wrist.heading * -1
-	// GRS.wrist.pitch = data.wrist.pitch
-	// GRS.index.pitch = data.index.pitch
-	// GRS.middle.pitch = data.middle.pitch
-	// GRS.ring.pitch = data.ring.pitch
-	// GRS.pinky.pitch = data.pinky.pitch
+	var ws = new WebSocket (source)
+	ws.onopen = function(){
+		console.log("Done")
+	}
+
+	ws.onmessage = function(e)
+	{
+		console.log(e.data)
+		if (e.data == "Init done")
+			return 
+		data = JSON.parse(e.data).data
+		heading = data.wrist.heading
+		pitch = data.wrist.pitch
+		console.log(heading,pitch)
+		theta = heading
+		phi = pitch
+	}
+
+
+	ws.onclose = function()
+	{
+		console.log("Closed")
+	}
 	
-	console.log(GRS.wrist.pitch)
-}
-
-
-ws.onclose = function()
-{
-	console.log("Closed")
 }
 </script>
 
@@ -164,13 +162,20 @@ $(document).ready(function(){
 			
 		}
 	})
+
+	$("#source").keypress(function(evt){
+		key = evt.which;
+		if(key==13)
+			open_ws($(this).val())
+	})
 })	
 
 </script>
 <div style="position:absolute;width:200px; height:70px;top:10px;left:20px; z-index:9999">
 	 Heading (theta): <div id="heading" angle="theta"></div><br>
 	 Pitch (phi): <div id="pitch" angle = "phi"></div><br>
-	 Roll: <div id="roll"></div>
+	 Roll: <div id="roll"></div><br>
+	 <input type="text" id="source" placeholder="Source">
 </div>
 </body>
 </html>
