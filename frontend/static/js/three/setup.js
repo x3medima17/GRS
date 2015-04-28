@@ -12,7 +12,7 @@ function setup()
 		camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR)
 
 		scene.add(camera)
-		camera.position.set(-1,400,0)
+		camera.position.set(50,200,200)
 		camera.lookAt(scene.position)
 
 		// Render
@@ -78,29 +78,4 @@ function setup()
 
 
 		
-}
-
-function load_car()
-{
-	///// Object /////
-		loader =  new THREE.JSONLoader()
-		loader.load("/js/car.js",function(geometry,materials){
-			var material = new THREE.MeshLambertMaterial({
-				map: THREE.ImageUtils.loadTexture("/models/car.jpg"),
-			colorAmbient: [0.480000026226044, 0.480000026226044, 0.480000026226044],
-        	colorDiffuse: [0.480000026226044, 0.480000026226044, 0.480000026226044],
-        	colorSpecular: [0.8999999761581421, 0.8999999761581421, 0.8999999761581421]
-			})
-
-			car = new THREE.Mesh(geometry,material)
-			// car.applyMatrix( new THREE.Matrix4().makeTranslation( 300, -300, 500 ) );
-
-			car.receiveShadow  = true;
-			car.castShadow = true;
-			car.rotation.y = -Math.PI 
-			car.position.y = 50
-			car.position.x = 100
-			car.position.z = 100
-			// scene.add(car)
-		})
 }
