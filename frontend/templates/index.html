@@ -147,8 +147,8 @@ $(function(){
 				// console.log(finger,axis,"Initial: ",data[finger][axis],"Scaled: ",val)
 				$("#"+finger+"-"+axis).css("height",val+"%")
 			})
-		})
-		$("#acceleration-x").attr("value",data.wrist["acceleration-x"])
+		})	
+		$("#acceleration-x").val(data.wrist["acceleration-x"]).trigger("change")
 		$("#acceleration-y").attr("value",data.wrist["acceleration-y"])
 		$("#acceleration-z").attr("value",data.wrist["acceleration-z"])
 

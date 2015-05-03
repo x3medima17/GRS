@@ -136,10 +136,10 @@ function open_ws(source)
 		y = data.wrist.y
 		z = data.wrist.z
 		
-		q0 = data.wrist["acceleration-w"]
-		q1 = data.wrist["acceleration-x"]
-		q2 = data.wrist["acceleration-y"]
-		q3 = data.wrist["acceleration-z"]
+		q0 = data.wrist["acceleration-x"]
+		q1 = data.wrist["acceleration-y"]
+		q2 = data.wrist["acceleration-z"]
+		q3 = data.wrist["acceleration-w"]
 
 		acc_heading = Math.atan2(2*q1*q2 - 2*q0*q3, 2*q0*q0 + 2*q1*q1 - 1).toFixed(5)
 		acc_pitch = -Math.asin(2*q1*q3 + 2*q0*q2).toFixed(5)
