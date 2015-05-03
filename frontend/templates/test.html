@@ -78,7 +78,7 @@ function animate(){
 	x = d * Math.sin(phi)* Math.sin(theta)
 	y = d * Math.cos(phi)
 	z = d * Math.sin(phi) * Math.cos(theta)
-	tip1.position.set(x,y,z)
+	// tip1.position.set(x,y,z)
 	cylinder.lookAt(tip1.position)
 	update()
 }
@@ -135,6 +135,7 @@ function open_ws(source)
 		x = data.wrist.x
 		y = data.wrist.y
 		z = data.wrist.z
+		tip1.position.set(x,y,z)
 		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
 		text = "X: "+x+"<br>Y: "+y+"<br> Z: "+z+"<br> Const: "+magnitude
 		console.log(text)
