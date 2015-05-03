@@ -135,10 +135,21 @@ function open_ws(source)
 		x = data.wrist.x
 		y = data.wrist.y
 		z = data.wrist.z
+		
+		q0 = data.wrist["acceleration-w"]
+		q1 = data.wrist["acceleration-x"]
+		q2 = data.wrist["acceleration-y"]
+		q3 = data.wrist["acceleration-z"]
+
+		acc_heading = Math.atan2(2*q1*q2 - 2*q0*q3, 2*q0*q0 + 2*q1*q1 - 1).toFixed(5)
+		acc_pitch = -Math.asin(2*q1*q3 + 2*q0*q2).toFixed(5)
+		acc_roll = -Math.atan2(2*q2*q3 - 2*q0*q1, 2*q0*q0 + 2*q3*q3 - 1).toFixed(5)
+
 		tip1.position.set(x,y,z)
 		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
-		text = "X: "+x+"<br>Y: "+y+"<br> Z: "+z+"<br> Const: "+magnitude
-		console.log(text)
+		text = "X: "+x+"<br>Y: "+y+"<br> Z: "+z+"<br> Const: "+magnitude+"<br><br> \
+				Heading: "+acc_heading+"<br>Pitch: "+acc_pitch+"<br> Roll: "+acc_roll
+
 		$("#data span").html(text)
 
 	}

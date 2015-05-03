@@ -62,10 +62,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                     y = y,
                     z = z
                 )
+        acc = data[-1].split(' ')
+
+        message["wrist"]['acceleration-w'] = acc[0]
+        message["wrist"]['acceleration-x'] = acc[1]
+        message["wrist"]['acceleration-y'] = acc[2]
+        message["wrist"]['acceleration-z'] = acc[3]
+        
         data = dict(
             data = message,
             raw = raw
             )
+
         message = json.dumps(data)
         for client in clients:
             client.write_message(message)

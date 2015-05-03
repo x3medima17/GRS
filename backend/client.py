@@ -31,7 +31,10 @@ while True:
 	# print neg*1.0 / total
 	lst = [int(x+random.uniform(-epsilon,epsilon+2)) for x in lst]
 	lst = [int(random.uniform(0,100)) if x<0 or x> 100 else x for x in lst]
-	message =   ";".join([" ".join(x) for x in slice(lst,3)])
+	lst_acc = [str(int(random.uniform(-100,100))) for x in range(4)]
+	print lst_acc
+	message =   ";".join([" ".join(x) for x in slice(lst,3)]) + ";" + " ".join(lst_acc)
+
 	ws.send(message)
 	print message
 	time.sleep(0.1)
