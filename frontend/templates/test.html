@@ -132,6 +132,14 @@ function open_ws(source)
 		console.log(heading,pitch)
 		theta = heading
 		phi = pitch
+		x = data.wrist.x
+		y = data.wrist.y
+		z = data.wrist.z
+		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
+		text = "X: "+x+"<br>Y: "+y+"<br> Z: "+z+"<br> Const: "+magnitude
+		console.log(text)
+		$("#data span").html(text)
+
 	}
 
 
@@ -163,6 +171,8 @@ $(document).ready(function(){
 		}
 	})
 
+	ws_url = "ws://"+window.location.hostname+":9090/ws"
+	$("#source").val(ws_url)
 	$("#source").keypress(function(evt){
 		key = evt.which;
 		if(key==13)
@@ -176,6 +186,11 @@ $(document).ready(function(){
 	 Pitch (phi): <div id="pitch" angle = "phi"></div><br>
 	 Roll: <div id="roll"></div><br>
 	 <input type="text" id="source" placeholder="Source">
+</div>
+
+<div style="position:absolute;right:20px;width:180px;height:180px;top:10px;background-color:#76C75B;z-index:9999;opacity:0.9;padding:10px" id="data">
+<span style="font-size:18px;margin-right:10px">
+</span>
 </div>
 </body>
 </html>

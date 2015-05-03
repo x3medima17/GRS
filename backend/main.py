@@ -57,7 +57,10 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             message[fingers[i]] = dict(
                     heading = atan2(y,x),
                     roll = atan2(y,sqrt(x**2+z**2)),
-                    pitch = atan2(x,sqrt(y**2+z**2))
+                    pitch = atan2(x,sqrt(y**2+z**2)),
+                    x = x,
+                    y = y,
+                    z = z
                 )
         data = dict(
             data = message,
