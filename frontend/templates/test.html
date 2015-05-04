@@ -38,7 +38,7 @@
 		roll : 0
 	}
 	var tip0,tip1,cylinder,r,d=100;
-	var scale = 100;
+	var scale = 100,height=200;
 
 
 	var phi = 0
@@ -52,11 +52,13 @@
 
 
 		tip0 = new THREE.Mesh(tipSphereGeometry,sphereMaterial);
+		tip0.position.y = height
 		tip1 = new THREE.Mesh(tipSphereGeometry, sphereMaterial);
 		
 		x = d * Math.sin(phi)* Math.sin(theta)
 		y = d * Math.cos(phi)
 		z = d * Math.sin(phi) * Math.cos(theta)
+		
 		tip1.position.set(x,y,z)
 		console.log(x,y,z)
 		var curr_geo = new THREE.CylinderGeometry(1,4,d,32,32,false)
@@ -64,6 +66,7 @@
 		curr_geo.applyMatrix( new THREE.Matrix4().makeRotationX(	 THREE.Math.degToRad( 90 ) ) );
 	
 		cylinder = new THREE.Mesh(curr_geo, cylinderMaterial);
+		cylinder.position.y = height
 		cylinder.lookAt(tip1.position)
 		scene.add(tip0)
 		scene.add(tip1)
@@ -140,7 +143,7 @@ function open_ws(source)
 		
 
 		x = x/magnitude * scale 
-		y = y/magnitude * scale  
+		y = y/magnitude * scale + height 
 		z = z/magnitude * scale 
 		tip1.position.set(x,y,z)
 		cylinder.lookAt(tip1.position)
