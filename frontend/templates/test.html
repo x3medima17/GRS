@@ -130,7 +130,7 @@ function open_ws(source)
 		data = JSON.parse(e.data).data
 		heading = data.wrist.heading
 		pitch = data.wrist.pitch
-		console.log(heading,pitch)
+		// console.log(heading,pitch)
 		theta = heading
 		phi = pitch
 		x = data.wrist.x
@@ -139,12 +139,12 @@ function open_ws(source)
 		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
 		
 
-		x = x/magnitude * -scale
-		y = y/magnitude * -scale
-		z = z/magnitude * -scale
+		x = x/magnitude * scale * -1
+		y = y/magnitude * scale * 
+		z = z/magnitude * scale * -1
 		tip1.position.set(x,y,z)
 		cylinder.lookAt(tip1.position)
-
+		console.log(x,y,z)
 		q0 = data.wrist["acceleration-x"]
 		q1 = data.wrist["acceleration-y"]
 		q2 = data.wrist["acceleration-z"]
