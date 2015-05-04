@@ -142,10 +142,11 @@ function open_ws(source)
 		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
 		
 
-		x = x/magnitude * scale * -1 
+		x = x/magnitude * scale * -1 * 0
 		y = (y/magnitude * scale) *-1 + height 
 		z = z/magnitude * scale *-1
 		tip1.position.set(x,y,z)
+		tip0.position.y = height
 		cylinder.lookAt(tip1.position)
 		console.log(x,y,z)
 		q0 = data.wrist["acceleration-x"]
