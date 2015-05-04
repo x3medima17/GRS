@@ -134,14 +134,14 @@ function open_ws(source)
 		theta = heading
 		phi = pitch
 		x = data.wrist.x
-		y = data.wrist.y
+		y = data.wrist.yx
 		z = data.wrist.z
 		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
 		
 
-		// x = x/magnitude * scale
-		// y = y/magnitude * scale
-		// z = z/magnitude * scale
+		x = x/magnitude * -scale
+		y = y/magnitude * -scale
+		z = z/magnitude * -scale
 		tip1.position.set(x,y,z)
 		cylinder.lookAt(tip1.position)
 
