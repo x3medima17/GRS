@@ -145,6 +145,9 @@ function open_ws(source)
 		// x = x/magnitude * scale * -1 
 		// y = (y/magnitude * scale) *-1 + height 
 		// z = z/magnitude * scale *-1
+		x /= 10
+		y /= 10
+		z /= 10
 		tip1.position.set(x,y,z)
 		tip0.position.y = height
 		cylinder.lookAt(tip1.position)
