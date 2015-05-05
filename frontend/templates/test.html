@@ -139,6 +139,8 @@ function open_ws(source)
 		x = data.wrist.x 
 		y = data.wrist.y
 		z = data.wrist.z
+		theta = x
+		phi = y
 		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
 		
 		// x = x/magnitude * scale * -1 
