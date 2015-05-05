@@ -89,7 +89,7 @@ function update(){
 	y = d * Math.cos(phi)
 	z = d * Math.sin(phi) * Math.cos(theta)
 	tip1.position.set(x,y,z)
-	
+	cylinder.lookAt(tip1.position)
 	// tip1.position.x 
 	controls.update()
 	stats.update()
@@ -148,7 +148,7 @@ function open_ws(source)
 		// tip1.position.set(x,y,z)
 
 		tip0.position.y = height
-		cylinder.lookAt(tip1.position)
+		
 		console.log(x,y,z)
 		q0 = data.wrist["acceleration-x"]
 		q1 = data.wrist["acceleration-y"]
