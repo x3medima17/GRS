@@ -85,10 +85,10 @@ function animate(){
 function update(){
 	// fe[0].position.x += 1
 	var delta = clock.getDelta()
-	// x = d * Math.sin(phi)* Math.sin(theta)
-	// y = d * Math.cos(phi)
-	// z = d * Math.sin(phi) * Math.cos(theta)
-	// tip1.position.set(x,y,z)
+	x = d * Math.sin(phi)* Math.sin(theta)
+	y = d * Math.cos(phi)
+	z = d * Math.sin(phi) * Math.cos(theta)
+	tip1.position.set(x,y,z)
 	
 	// tip1.position.x 
 	controls.update()
@@ -139,16 +139,14 @@ function open_ws(source)
 		x = data.wrist.x 
 		y = data.wrist.y
 		z = data.wrist.z
-		magnitude = Math.sqrt(y*y+z*z).toFixed(5)
-		// magnitude = 537
+		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
+		
+		x = x/magnitude * scale * -1 
+		y = (y/magnitude * scale) *-1 + height 
+		z = z/magnitude * scale *-1
 
-		// x = x/magnitude * scale * -1 
-		// y = (y/magnitude * scale) *-1 + height 
-		// z = z/magnitude * scale *-1
-		x /= 10
-		y /= 10
-		z /= 10
-		tip1.position.set(x,y,z)
+		// tip1.position.set(x,y,z)
+
 		tip0.position.y = height
 		cylinder.lookAt(tip1.position)
 		console.log(x,y,z)
@@ -181,9 +179,9 @@ function open_ws(source)
 </script>
 
 
-<script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
-<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="/static/js/jquery-1.9.1.js"></script>
+<script src="/static/jq/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="/static/jq/jquery-ui.css">
 
 <script type="text/javascript">
 $(document).ready(function(){
