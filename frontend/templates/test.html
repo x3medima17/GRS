@@ -38,7 +38,7 @@
 		roll : 0
 	}
 	var tip0,tip1,cylinder,r,d=100;
-	var scale = 100,height=100;
+	var scale = 100,height=0;
 
 
 	var phi = 0
@@ -141,9 +141,9 @@ function open_ws(source)
 		z = data.wrist.z
 		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
 		
-		x = x/magnitude * scale * -1 
-		y = (y/magnitude * scale) *-1 + height 
-		z = z/magnitude * scale *-1
+		// x = x/magnitude * scale * -1 
+		// y = (y/magnitude * scale) *-1 + height 
+		// z = z/magnitude * scale *-1
 
 		// tip1.position.set(x,y,z)
 
