@@ -151,10 +151,10 @@ function open_ws(source)
 		tip0.position.y = height
 		
 		console.log(x,y,z)
-		q0 = data.wrist["acceleration-x"]
-		q1 = data.wrist["acceleration-y"]
-		q2 = data.wrist["acceleration-z"]
-		q3 = data.wrist["acceleration-w"]
+		q0 = data.wrist["acceleration-w"]
+		q1 = data.wrist["acceleration-x"]
+		q2 = data.wrist["acceleration-y"]
+		q3 = data.wrist["acceleration-z"]
 
 		var quaternion = new THREE.Quaternion();
 		var vector = new THREE.Vector3(1,0,0);
@@ -164,6 +164,7 @@ function open_ws(source)
 		vector.y *= scale
 		vector.z *= scale
 		tip1.position.set(vector.x,vector.y,vector.z)
+		console.log(q0,q1,q2,q3)
 		// theta = acc_heading
 		// phi = acc_pitch
 
