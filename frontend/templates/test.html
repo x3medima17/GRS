@@ -134,13 +134,12 @@ function open_ws(source)
 		heading = data.wrist.heading
 		pitch = data.wrist.pitch
 		// console.log(heading,pitch)
-		theta = heading
-		phi = pitch
+		
 		x = data.wrist.x 
 		y = data.wrist.y
 		z = data.wrist.z
-		theta = x
-		phi = y
+		theta = y
+		phi = x
 		magnitude = Math.sqrt(x*x+y*y+z*z).toFixed(5)
 		
 		// x = x/magnitude * scale * -1 
