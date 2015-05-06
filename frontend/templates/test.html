@@ -85,10 +85,10 @@ function animate(){
 function update(){
 	// fe[0].position.x += 1
 	var delta = clock.getDelta()
-	x = d * Math.sin(phi)* Math.sin(theta)
-	y = d * Math.cos(phi)
-	z = d * Math.sin(phi) * Math.cos(theta)
-	tip1.position.set(x,y,z)
+	// x = d * Math.sin(phi)* Math.sin(theta)
+	// y = d * Math.cos(phi)
+	// z = d * Math.sin(phi) * Math.cos(theta)
+	// tip1.position.set(x,y,z)
 	cylinder.lookAt(tip1.position)
 	// tip1.position.x 
 	controls.update()
@@ -156,16 +156,18 @@ function open_ws(source)
 		q2 = data.wrist["acceleration-z"]
 		q3 = data.wrist["acceleration-w"]
 
-		acc_heading = Math.atan2(2*q1*q2 - 2*q0*q3, 2*q0*q0 + 2*q1*q1 - 1).toFixed(5)
-		acc_pitch = -Math.asin(2*q1*q3 + 2*q0*q2).toFixed(5)
-		acc_roll = -Math.atan2(2*q2*q3 - 2*q0*q1, 2*q0*q0 + 2*q3*q3 - 1).toFixed(5)
-
+		var quaternion = new THREE.Quaternion();
+		var vector = new THREE.Vector3(1,0,0);
+		vector.applyQuaternion(quaternion)
+		quaternion.set(q0,q1,q2,q3)
+		vector.x *= scale
+		vector.y *= scale
+		vector.z *= scale
+		tip1.position.set(vector.x,vector.y,vector.z)
 		// theta = acc_heading
 		// phi = acc_pitch
 
-		text = "X: "+x+"<br>Y: "+y+"<br> Z: "+z+"<br> Const: "+magnitude+"<br><br> \
-				Heading: "+acc_heading+"<br>Pitch: "+acc_pitch+"<br> Roll: "+acc_roll
-
+		text = "X: "+x+"<br>Y: "+y+"<br> Z: "+z+"<br> Const: "+magnitude+"<br><br> "
 		$("#data span").html(text)
 
 	}
