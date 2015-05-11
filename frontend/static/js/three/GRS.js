@@ -5,7 +5,7 @@ var GRS = {
 			y : 120,
 			z : 50
 		},
-		pitch : 0.3,
+		pitch : 0,
 		roll : 0,
 		heading : 0,
 		object : undefined
@@ -99,7 +99,8 @@ var GRS = {
 		joints : [],
 		bones : []	
 	},
-	scale : 15
+	scale : 15,
+	objects : []
 }
 
 var bone_template = {

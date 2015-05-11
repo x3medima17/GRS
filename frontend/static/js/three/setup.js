@@ -70,7 +70,7 @@ function setup()
 		floorTexture.repeat.set(10,10)
 
 		var floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture, side: THREE.DoubleSide })
-		var floorGeometry = new THREE.PlaneGeometry(1000,1000,1,1)
+		var floorGeometry = new THREE.PlaneGeometry(100,100,1,1)
 		var floor = new THREE.Mesh(floorGeometry, floorMaterial)
 		floor.position.y = -0.5
 		floor.rotation.x = Math.PI /2
@@ -79,3 +79,4 @@ function setup()
 
 		
 }
+

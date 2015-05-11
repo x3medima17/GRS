@@ -35,15 +35,15 @@ def getdata(ser):
         total = 0
         fail = 0
         rate = 0
-        SAMPLES = 1000;
+        SAMPLES = 2000;
         
         
-        f1 = open("s1_raw.txt", "w")
-        f2 = open("s2_raw.txt", "w")
-        f3 = open("s3_raw.txt", "w")
-        f4 = open("s4_raw.txt", "w")
-        f5 = open("s5_raw.txt", "w")
-        f6 = open("s6_raw.txt", "w")
+        f1 = open("s0_raw.txt", "w")
+        f2 = open("s1_raw.txt", "w")
+        f3 = open("s2_raw.txt", "w")
+        f4 = open("s3_raw.txt", "w")
+        f5 = open("s4_raw.txt", "w")
+        f6 = open("s5_raw.txt", "w")
 
         ser.write("G")
         print "Debug getdata"
@@ -122,7 +122,7 @@ def calibrate(ser):
 
 
  
-def senddata(ser,server = "188.166.48.28"):
+def senddata(ser,server="ws://188.166.48.28:9090/ws"):
         filter_N =      5
         frequency = 600 * filter_N
         period = 1.0/frequency
@@ -131,7 +131,7 @@ def senddata(ser,server = "188.166.48.28"):
         rate = 0
 
         try:
-                ws = create_connection("ws://"+server+":9090/ws")
+                ws = create_connection(server)
         except:
                 print "Cannot connect to WebSocket Server"
                 sys.exit(2)
@@ -144,6 +144,7 @@ def senddata(ser,server = "188.166.48.28"):
  
                 ser.write("S")
                 data = ser.readline().replace("\n","").replace("\r","")
+                print data
                 # print data,data[0],data[len(data)-1]
                 if not data or data[0] != 's' or data[len(data)-1] != 'f':
                         fail+=1
@@ -171,11 +172,10 @@ if __name__ == "__main__":
     argument = sys.argv[2]
     
     comp_port = sys.argv[1]
-
     try:
-        server = sys.argv[3]
+    	server = sys.argv[3]
     except:
-        server = "188.166.48.28"
+    	server = "ws://188.166.48.28:9090/ws"
 
     # Init
     try:
@@ -184,6 +184,7 @@ if __name__ == "__main__":
         print "Cannot open COM Port"
         sys.exit(1)
     
+    #!!!!!!!!!!
     init(ser);
 
     if argument == "S":
