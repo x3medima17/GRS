@@ -1,7 +1,0 @@
-[I 150511 19:11:00 web:1825] 304 GET /test (127.0.0.1) 6.13ms
-[I 150511 19:11:00 web:1825] 304 GET /static/js/three/GRS.js (127.0.0.1) 62.55ms
-[W 150511 19:11:01 web:1825] 404 GET /favicon.ico (127.0.0.1) 4.56ms
-[I 150511 19:11:08 web:1825] 304 GET /model (127.0.0.1) 17.82ms
-[I 150511 19:11:22 web:1825] 200 GET /gestures/add (127.0.0.1) 71.62ms
-[I 150511 19:45:42 web:1825] 304 GET /model (127.0.0.1) 17.35ms
-[I 150511 19:45:42 web:1825] 304 GET /static/js/three/setup.js (127.0.0.1) 37.38ms
