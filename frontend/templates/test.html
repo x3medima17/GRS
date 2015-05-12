@@ -96,9 +96,6 @@ function update(){
 	cylinder.lookAt(tip1.position)
 	// tip1.position.x 
 
-	var axis = new THREE.Vector3(0,1,0)
-	alpha = 0.01
-	rotateAboutWorldAxis(test,axis,alpha)
 	controls.update()
 	stats.update()
 }
@@ -178,15 +175,8 @@ function open_ws(source)
 		q2 = data.wrist["acceleration-y"]
 		q3 = data.wrist["acceleration-z"]
 
-		var quaternion = new THREE.Quaternion();
-		quaternion.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI / 2 );
-		var vector = new THREE.Vector3(1,0,0);
-		quaternion.set(q0,q1,q2,q3)
-		vector.applyQuaternion(quaternion)
 		
-		// var rotation = new THREE.Euler().setFromQuaternion(quaternion)
-		// vector.applyEuler(rotation)
-		// console.log(rotation)
+		quaternion.set(q0,q1,q2,q3)
 		
 		console.log(q0,q1,q2,q3)
 
@@ -195,7 +185,7 @@ function open_ws(source)
 		pitch = -Math.asin(2*q1*q3 + 2*q0*q2)
 		roll = Math.atan2(2*q2*q3 - 2*q0*q1, 2*(q0*q0) + 2*(q3*q3) - 1)
 
-		vector = new THREE.Vector3(0,0,-1)
+		vector = new THREE.Vector3(0,0,1)
 
 		var axis = new THREE.Vector3(0,1,0)
 		vector.applyAxisAngle(axis,-heading)
@@ -212,7 +202,7 @@ function open_ws(source)
 		tip1.position.set(vector.x,vector.y,vector.z)
 		console.log(vector.x,vector.y,vector.z)
 
-		text = "X: "+x+"<br>Y: "+y+"<br> Z: "+z+"<br> Const: "+magnitude+"<br><br> "+roll
+		text = "X: "+x+"<br>Y: "+y+"<br> Z: "+z+"<br> Const: "+magnitude+"<br><br> "+pitch
 		$("#data span").html(text)
 
 	}
