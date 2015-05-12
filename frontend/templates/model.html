@@ -471,7 +471,7 @@ ws.onmessage = function(e)
 		}
 		//Ignore heading
 		curr_pivot = GRS.index.joints[1]
-		var v1 = new THREE.Vector3(heading_pivot.position.x,heading_pivot.position,y,heading_pivot.position.z).normalize()
+		var v1 = new THREE.Vector3(heading_pivot.position.x,heading_pivot.position.y,heading_pivot.position.z).normalize()
 		var v2 = new THREE.Vector3(heading_pivot.position.x,heading_pivot.position.y,heading_pivot.position.z).normalize()
 		angle = v1.dot(v2)
 		var axis = new THREE.Vector3(0,1,0)
