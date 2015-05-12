@@ -140,8 +140,6 @@ function update_hand(count)
 {
 	count = 0
 	GRS.wrist.object.position.set(GRS.wrist.position.x,GRS.wrist.position.y,GRS.wrist.position.z)
-	if(count==1)
-		objects.push(GRS.wrist)
 	fingers = ["thumb","index","middle","ring","pinky"]
 	for(j=0;j<fingers.length;j++)
 	{
@@ -150,8 +148,6 @@ function update_hand(count)
 		//Heading
 
 		GRS[finger].joints[0].object.position.set(GRS[finger].joints[0].position.x,GRS[finger].joints[0].position.y,GRS[finger].joints[0].position.z)
-		if(count==1)
-			objects.push(GRS[finger].joints[0])
 		
 		bones = ["metacarpal","proximal","intermediate","distal"]
 		var phi = finger_pitch(GRS[finger].pitch)
@@ -187,12 +183,8 @@ function update_hand(count)
 			
 			GRS[finger].bones[curr_joint-1].object.position.copy(joint1.position)
 			GRS[finger].bones[curr_joint-1].object.lookAt(joint2.position)
-			if(count==1)
-				objects.push(GRS[finger].bones[curr_joint-1])
 		}
 	}
-	if(count == 1)
-		iobjects = jQuery.extend(true, {}, objects)
 
 }
 
@@ -279,13 +271,15 @@ function redraw()
 			
 		}
 	}
+	if(count ==  1)
+		iobjects = jQuery.extend(true, {}, objects)
 	console.log(objects.length)
 }
 
 function rotate(axis, angle)
 {
-	for(i=0;i<objects.length; i++)
-		rotateAboutWorldAxis(objects[i],axis,angle)
+	for(i=0;i<iobjects.length; i++)
+		rotateAboutWorldAxis(iobjects[i],axis,angle)
 }
 
 function finger_pitch(phi)
