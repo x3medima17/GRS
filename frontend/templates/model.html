@@ -31,7 +31,7 @@
 	var objects = []
 	var sphere, cylinder,prev_angle = 0
 	var prev_heading=0,prev_pitch=0, prev_roll=0;
-	var iGRS, iobjects;
+	var iGRS, iobjects,heading_pivot;
 	function init(){
 
 		setup();
@@ -129,6 +129,7 @@
 				GRS.objects.push(tmp.object)
 			}
 		}
+		heading_pivot = GRS.index.joints[1]
 		draw_hand()
 		update_hand(1)
 		// GRS.wrist.position.x = -300
@@ -461,12 +462,20 @@ ws.onmessage = function(e)
 			axis = new THREE.Vector3(0,0,1)
 			vector.applyAxisAngle(axis,-roll)
 
+
 			objects[i].position.x = vector.x
 			objects[i].position.y = vector.y
 			objects[i].position.z = vector.z
 			
 			// update_hand(0)
 		}
+		//Ignore heading
+		curr_pivot = GRS.index.joints[1]
+		var v1 = new THREE.Vector3(heading_pivot.position.x,heading_pivot.position,y,heading_pivot.position.z).normalize()
+		var v2 = new THREE.Vector3(heading_pivot.position.x,heading_pivot.position.y,heading_pivot.position.z).normalize()
+		angle = v1.dot(v2)
+		var axis = new THREE.Vector3(0,1,0)
+		rotate(axis,angle)
 	
 
 
