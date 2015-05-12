@@ -48,7 +48,6 @@ Theta1 = reshape(nn_params(1:H*(N+1)),H,N+1);
 Theta2 = reshape(nn_params(H*(N+1)+1:H*(N+1) + H*(H+1)), H,H+1);
 
 Theta3 = reshape(nn_params(H*(N+1)+1 + H*(H+1):end),K,H+1);
-pred = predict(Theta1, Theta2, Theta3, X);
 
 
 fprintf('\nTraining Set Accuracy: %f\n', mean(double(pred == y)) * 100);
