@@ -16,25 +16,12 @@ function [J grad] = nnCostFunction(nn_params, ...
 
 % Reshape nn_params back into the parameters Theta1 and Theta2, the weight matrices
 % for our 2 layer neural network
-N = input_layer_size;
-H = hidden_layer_size;
-K = num_labels;
+Theta1 = reshape(nn_params(1:hidden_layer_size * (input_layer_size + 1)), ...
+                 hidden_layer_size, (input_layer_size + 1));
 
-Theta1 = reshape(nn_params(1:H*(N+1)),H,N+1);
+Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):end), ...
+                 num_labels, (hidden_layer_size + 1));
 
-Theta2 = reshape(nn_params(H*(N+1)+1:H*(N+1) + H*(H+1)), H,H+1);
-
-Theta3 = reshape(nn_params(H*(N+1)+1 + H*(H+1):end),K,H+1);
-
-
-% Theta1 = reshape(nn_params(1:hidden_layer_size * (input_layer_size + 1)), ...
-%                  hidden_layer_size, (input_layer_size + 1));
-
-% Theta2 = reshape(nn_params(1:hidden_layer_size * (hidden_layer_size+1)), ...
-% 				 hidden_layer_size,(hidden_layer_size+1));
-
-% Theta3 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):end), ...
-%                  num_labels, (hidden_layer_size + 1));
 
 input_layer_size;
 hidden_layer_size;
@@ -49,7 +36,7 @@ m = size(X, 1);
 J = 0;
 Theta1_grad = zeros(size(Theta1));
 Theta2_grad = zeros(size(Theta2));
-Theta3_grad = zeros(size(Theta3));
+
 % ====================== YOUR CODE HERE ======================
 % Instructions: You should complete the code by working through the
 %               following parts.
@@ -86,17 +73,12 @@ J = 0;
 K = num_labels;
 %Feed-forward 
 a1 = [ones(m,1) X];
-
 z2 = a1 *Theta1' ;
 a2 = [ones(m,1) sigmoid(z2)];
 
 z3 = a2 * Theta2';
-a3 = [ones(m,1) sigmoid(z3)];
-
-z4 = a3 * Theta3';
-a4 = sigmoid(z4);
-
-h0 = a4;
+a3 = sigmoid(z3);
+h0 = a3;
 
 tmp = 1:K;
 Y = repmat(tmp,m,1) == y;
@@ -115,10 +97,6 @@ tmp_theta = Theta2 .^ 2;
 tmp_theta(:,1) = 0;
 s += sum(sum(tmp_theta));
 
-tmp_theta = Theta3 .^ 2;
-tmp_theta(:,1) = 0;
-s += sum(sum(tmp_theta));
-
 J += lambda/(2*m) * s;
 
 
@@ -133,17 +111,9 @@ z2 = a1 * Theta1';
 a2 = [ones(m,1) sigmoid(z2)];
 
 z3 = a2 * Theta2';
-a3 = [ones(m,1) sigmoid(z3)];
+a3 = sigmoid(z3);
 
-z4 = a3 * Theta3';
-a4 = sigmoid(z4);
-
-
-delta4 = a4 - Y;
-
-delta3 = (Theta3' * delta4')';
-delta3 = delta3(:,2:end)  .* sigmoidGradient(z3);
-
+delta3 = a3 - Y;
 
 delta2 = (Theta2' * delta3')';
 delta2 = delta2(:,2:end)  .* sigmoidGradient(z2);
@@ -151,31 +121,25 @@ delta2 = delta2(:,2:end)  .* sigmoidGradient(z2);
 
 Delta1 = delta2' * a1;
 Delta2 = delta3' * a2;
-Delta3 = delta4' * a3;
 
 coeff = 1/m;
 
 D1 = coeff * Delta1;
 D2 = coeff * Delta2;
-D3 = coeff * Delta3;
 
 tmp_theta1 = Theta1;
 tmp_theta2 = Theta2;
-tmp_theta3 = Theta3;
 
 tmp_theta1(:,1) = 0;
 tmp_theta2(:,1) = 0;
-tmp_theta3(:,1) = 0;
-
 
 Theta1_grad = D1 + (lambda/m) * tmp_theta1;
 Theta2_grad = D2+ (lambda/m) * tmp_theta2;
-Theta3_grad = D3+ (lambda/m) * tmp_theta3;
-
 % =========================================================================
 
 % Unroll gradients
-grad = [Theta1_grad(:) ; Theta2_grad(:); Theta3_grad(:)];
+
+grad = [Theta1_grad(:) ; Theta2_grad(:)];
 
 
 end

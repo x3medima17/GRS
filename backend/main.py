@@ -4,11 +4,14 @@ import tornado.httpserver
 import tornado.websocket
 import os
 import json
+import redis
 
 
 from math import atan2,sqrt 
 from tornado.options import define, options
 from pprint import pprint
+
+mem = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 define("port",default=9090,help="Service port",type=int)
 options.parse_command_line()
@@ -44,6 +47,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self,message):
         print "Got message: %s" % message
+        mem.set('raw_data',message)
         raw = message.replace(";"," ")
         data = message.split(";")
 

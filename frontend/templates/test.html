@@ -87,6 +87,12 @@ function animate(){
 }
 
 function update(){
+	var axis = new THREE.Vector3(0,1,0)
+	var vector = new THREE.Vector3(0,0,-1)
+	alpha += 0.01 
+	scale = 100
+	vector.applyAxisAngle(axis,alpha)
+	test.position.set(vector.x*scale,vector.y*scale,vector.z*scale)
 	// fe[0].position.x += 1
 	var delta = clock.getDelta()
 	// x = d * Math.sin(phi)* Math.sin(theta)
