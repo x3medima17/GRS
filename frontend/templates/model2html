@@ -1,0 +1,531 @@
+{% extends base.html %}
+
+{% block script %}
+
+<script src="/static/js/three/Three.js"></script>
+<script src="/static/js/three/Detector.js"></script>
+<script src="/static/js/three/THREEx.KeyboardState.js"></script>
+<script src="/static/js/three/THREEx.FullScreen.js"></script>
+<script src="/static/js/three/THREEx.WindowResize.js"></script>
+<script src="/static/js/three/OrbitControls.js"></script>
+<script src="/static/js/three/Stats.js"></script>
+<script src="/static/js/three/hand_data.js"></script>
+<script src="/static/js/three/setup.js"></script>
+<script src="/static/js/three/geometry.js"></script>
+<script src="/static/js/three/GRS.js"></script>
+
+
+<script>
+	// Macro objects
+	var container, scene, camera, renderer, controls, stats
+	var keyboard = new THREEx.KeyboardState()	
+	var clock = new THREE.Clock()
+	var light, ambientLight
+	var car,cylinder,group,pivot,tick=0.02
+	var rotation = {
+		heading : 0,
+		pitch : 0,
+		roll : 0
+	}
+
+	var objects = []
+	var sphere, cylinder,prev_angle = 0
+	var prev_heading=0,prev_pitch=0, prev_roll=0;
+	var iGRS, iobjects,heading_pivot;
+
+	function init(){
+
+		setup();
+		///// Gemetry ////
+
+
+	
+		thumb = []
+		scale = GRS.scale
+		
+
+		// Init hand		
+		height = GRS.wrist.position.y 
+		// Wrist
+		GRS.wrist.object = new THREE.Mesh(wristSphereGeometry,sphereMaterial)
+		GRS.wrist.position.x = 0
+		GRS.wrist.position.y = 0
+		GRS.wrist.position.z = 0
+		GRS.wrist.object.position.set(GRS.wrist.position.x,GRS.wrist.position.y,GRS.wrist.position.z)
+		// scene.add(GRS.wrist.object)
+
+		
+		// Init joints
+		fingers = ["thumb","index","middle","ring","pinky"]
+		for(j=0;j<fingers.length;j++)
+		{
+			finger = fingers[j]
+			var tmp = jQuery.extend(true, {}, joint_template)
+			tmp.position.y = height
+			d = GRS[finger].wrist * scale
+			//Heading
+			tmp.position.x = GRS.wrist.position.x + d * Math.sin(GRS[finger].wrist_angle + GRS.wrist.heading) 
+			tmp.position.z = GRS.wrist.position.z + d * Math.cos(GRS[finger].wrist_angle + GRS.wrist.heading) 
+			tmp.spin.heading = GRS[finger].finger_angle + GRS.wrist.heading
+			
+			//Pitch
+			dx = tmp.position.x - GRS.wrist.position.x 
+			tmp.position.x = GRS.wrist.position.x + dx * Math.cos(GRS.wrist.pitch)
+			tmp.position.y = GRS.wrist.position.y + d * Math.sin(GRS.wrist.pitch)
+			tmp.spin.pitch = GRS.wrist.pitch
+
+			tmp.object = new THREE.Mesh(tipSphereGeometry,sphereMaterial)
+			tmp.object.position.set(tmp.position.x,tmp.position.y,tmp.position.z)
+			GRS[finger].joints.push(tmp)
+			// scene.add(GRS[finger].joints[0].object)
+
+			bones = ["metacarpal","proximal","intermediate","distal"]
+			var curr_joint = 0
+			for(i=0;i<bones.length;i++)
+			{
+				// Joint
+				if(i==2 && finger == "thumb")
+					continue
+				curr_joint++
+				var tmp = jQuery.extend(true, {}, joint_template)
+				tmp.position.y = height
+				d = GRS[finger][bones[i]] * scale
+				
+				// Heading
+				tmp.position.x = GRS[finger].joints[curr_joint-1].position.x + d * Math.sin(GRS[finger].joints[curr_joint-1].spin.heading)
+				tmp.position.z = GRS[finger].joints[curr_joint-1].position.z + d * Math.cos(GRS[finger].joints[curr_joint-1].spin.heading)
+				tmp.spin.heading = GRS[finger].joints[curr_joint-1].spin.heading
+
+				//Pitch
+				
+				dx = tmp.position.x - GRS[finger].joints[curr_joint-1].position.x 
+				tmp.position.x = GRS[finger].joints[curr_joint-1].position.x + dx * Math.cos(GRS[finger].joints[curr_joint-1].spin.pitch)
+				tmp.position.y = GRS[finger].joints[curr_joint-1].position.y + d  * Math.sin(GRS[finger].joints[curr_joint-1].spin.pitch)
+				tmp.spin.pitch   = GRS[finger].joints[curr_joint-1].spin.pitch
+				
+				tmp.object = new THREE.Mesh(tipSphereGeometry, sphereMaterial)
+				tmp.object.position.set(tmp.position.x,tmp.position.y,tmp.position.z)
+				
+
+				GRS[finger].joints.push(tmp)
+				delete tmp
+				// scene.add(GRS[finger].joints[curr_joint].object)
+
+				// Bone
+				var tmp = jQuery.extend(true, {}, joint_template)
+				var curr_geo = new THREE.CylinderGeometry(4,4,d,32,32,false)
+				curr_geo.applyMatrix( new THREE.Matrix4().makeTranslation( 0, d / 2, 0 ) );
+				curr_geo.applyMatrix( new THREE.Matrix4().makeRotationX(	 THREE.Math.degToRad( 90 ) ) );
+
+				var joint1 = GRS[finger].joints[curr_joint]
+				var joint2 = GRS[finger].joints[curr_joint-1]
+				tmp.position.x = joint1.position.x
+				tmp.position.y = joint1.position.y
+				tmp.position.z = joint1.position.z
+
+				tmp.object = new THREE.Mesh(curr_geo,cylinderMaterial)
+				tmp.object.position.copy(joint1.position)
+				tmp.object.lookAt(joint2.position)
+				GRS[finger].bones.push(tmp)
+				GRS.objects.push(tmp.object)
+			}
+		}
+		heading_pivot = GRS.index.joints[1]
+		draw_hand()
+		update_hand(1)
+		// GRS.wrist.position.x = -300
+		redraw()
+
+
+	}
+	iGRS = jQuery.extend(true, {}, GRS)
+function update_hand(count)
+{
+	count = 0
+	GRS.wrist.object.position.set(GRS.wrist.position.x,GRS.wrist.position.y,GRS.wrist.position.z)
+	fingers = ["thumb","index","middle","ring","pinky"]
+	for(j=0;j<fingers.length;j++)
+	{
+		finger = fingers[j]
+		d = GRS[finger].wrist * scale
+		//Heading
+
+		GRS[finger].joints[0].object.position.set(GRS[finger].joints[0].position.x,GRS[finger].joints[0].position.y,GRS[finger].joints[0].position.z)
+		
+		bones = ["metacarpal","proximal","intermediate","distal"]
+		var phi = finger_pitch(GRS[finger].pitch)
+		var curr_joint = 0
+		for(i=0;i<bones.length;i++)
+		{
+			// Joint
+			if(i==2 && finger == "thumb")
+				continue
+			curr_joint++
+
+			d = GRS[finger][bones[i]] * scale
+			if(i>=0 && finger != "thumb")
+				GRS[finger].joints[curr_joint].spin.pitch += 0 
+			
+			var x = GRS[finger].joints[curr_joint].position.x
+			var y = GRS[finger].joints[curr_joint].position.y
+			var z = GRS[finger].joints[curr_joint].position.z
+
+			GRS[finger].joints[curr_joint].object.position.set(x,y,z)
+			if(count==1)
+				objects.push(GRS[finger].joints[curr_joint])
+
+			// continue
+			// Bone
+
+			var joint1 = GRS[finger].joints[curr_joint]
+			var joint2 = GRS[finger].joints[curr_joint-1]
+			GRS[finger].bones[curr_joint-1].position.x = joint1.position.x
+			GRS[finger].bones[curr_joint-1].position.y = joint1.position.y
+			GRS[finger].bones[curr_joint-1].position.z = joint1.position.z
+
+			
+			GRS[finger].bones[curr_joint-1].object.position.copy(joint1.position)
+			GRS[finger].bones[curr_joint-1].object.lookAt(joint2.position)
+		}
+	}
+
+}
+
+function redraw()
+{
+	count = 0
+	if(objects.length == 0)
+		count = 1
+
+	// return
+	GRS.wrist.object.position.set(GRS.wrist.position.x,GRS.wrist.position.y,GRS.wrist.position.z)
+	if(count)
+		objects.push(GRS.wrist)
+
+	fingers = ["thumb","index","middle","ring","pinky"]
+	for(j=0;j<fingers.length;j++)
+	{
+		finger = fingers[j]
+		d = GRS[finger].wrist * scale
+		//Heading
+		GRS[finger].joints[0].position.x = GRS.wrist.position.x + d * Math.sin(GRS[finger].wrist_angle + GRS.wrist.heading) 
+		GRS[finger].joints[0].position.z = GRS.wrist.position.z + d * Math.cos(GRS[finger].wrist_angle + GRS.wrist.heading) 
+		GRS[finger].joints[0].spin.heading = GRS[finger].finger_angle + GRS.wrist.heading
+		
+		//Pitch
+		dx = GRS[finger].joints[0].position.x - GRS.wrist.position.x 
+		GRS[finger].joints[0].position.x = GRS.wrist.position.x + dx * Math.cos(GRS.wrist.pitch)
+		GRS[finger].joints[0].position.y = GRS.wrist.position.y + d * Math.sin(GRS.wrist.pitch)
+		GRS[finger].joints[0].spin.pitch = GRS.wrist.pitch
+
+		GRS[finger].joints[0].object.position.set(GRS[finger].joints[0].position.x,GRS[finger].joints[0].position.y,GRS[finger].joints[0].position.z)
+
+		if(count)
+			objects.push(GRS[finger].joints[0])
+		
+		bones = ["metacarpal","proximal","intermediate","distal"]
+		var phi = finger_pitch(GRS[finger].pitch)
+		var curr_joint = 0
+		for(i=0;i<bones.length;i++)
+		{
+			// Joint
+			if(i==2 && finger == "thumb")
+				continue
+			curr_joint++
+
+			d = GRS[finger][bones[i]] * scale
+			
+			// Heading
+			GRS[finger].joints[curr_joint].position.x = GRS[finger].joints[curr_joint-1].position.x + d * Math.sin(GRS[finger].joints[curr_joint-1].spin.heading)
+			GRS[finger].joints[curr_joint].position.z = GRS[finger].joints[curr_joint-1].position.z + d * Math.cos(GRS[finger].joints[curr_joint-1].spin.heading)
+			GRS[finger].joints[curr_joint].spin.heading = GRS[finger].joints[curr_joint-1].spin.heading
+
+			//Pitch
+
+			dx = GRS[finger].joints[curr_joint].position.x - GRS[finger].joints[curr_joint-1].position.x 
+			GRS[finger].joints[curr_joint].position.x = GRS[finger].joints[curr_joint-1].position.x + dx * Math.cos(GRS[finger].joints[curr_joint-1].spin.pitch)
+			GRS[finger].joints[curr_joint].position.y = GRS[finger].joints[curr_joint-1].position.y + d  * Math.sin(GRS[finger].joints[curr_joint-1].spin.pitch)
+			GRS[finger].joints[curr_joint].spin.pitch = GRS[finger].joints[curr_joint-1].spin.pitch
+			if(i>=0 && finger != "thumb")
+				GRS[finger].joints[curr_joint].spin.pitch += phi 
+			var x = GRS[finger].joints[curr_joint].position.x
+			var y = GRS[finger].joints[curr_joint].position.y
+			var z = GRS[finger].joints[curr_joint].position.z
+
+			GRS[finger].joints[curr_joint].object.position.set(x,y,z)
+			if(count==1)
+				objects.push(GRS[finger].joints[curr_joint])
+
+
+			// continue
+			// Bone
+
+			var joint1 = GRS[finger].joints[curr_joint]
+			var joint2 = GRS[finger].joints[curr_joint-1]
+			GRS[finger].bones[curr_joint-1].position.x = joint1.position.x
+			GRS[finger].bones[curr_joint-1].position.y = joint1.position.y
+			GRS[finger].bones[curr_joint-1].position.z = joint1.position.z
+
+			
+			GRS[finger].bones[curr_joint-1].object.position.copy(joint1.position)
+			GRS[finger].bones[curr_joint-1].object.lookAt(joint2.position)
+			if(count==1)
+				objects.push(GRS[finger].bones[curr_joint-1])
+			
+		}
+	}
+	if(count ==  1)
+		iobjects = jQuery.extend(true, {}, objects)
+	console.log(objects.length)
+}
+
+
+function rotate(obj,axis,angle)
+{
+	vector = new THREE.Vector3(obj.position.x,obj.position.y,obj.position.z)
+	vector.applyAxisAngle(axis,angle)
+	objects[i].position.x = vector.x
+	objects[i].position.y = vector.y
+	objects[i].position.z = vector.z
+
+}
+function rotate_all(axis, angle)
+{
+	for(i=0;i<objects.length;i++)
+	{
+		var obj = objects[i]
+		rotate(obj,axis,angle)
+		
+		// update_hand(0)
+	}
+	console.log(axis)
+
+}
+
+function finger_pitch(phi)
+{
+	return (Math.PI - (-1/3*phi + Math.PI)) * -1
+}
+
+function draw_hand()
+{
+	// console.log(GRS)
+
+	scene.add(GRS.wrist.object)
+	//scene.add(GRS.index.joints[0].object)
+	//return
+	fingers = ["thumb","index","middle","ring","pinky"]
+	for(i=0;i<fingers.length;i++)
+	{
+		finger = fingers[i]
+		// console.log(finger)
+		scene.add(GRS[finger].joints[0].object)
+		bones = ["metacarpal","proximal","intermediate","distal"]
+		
+		// continue
+		var curr_joint = 0
+		for(j=0;j<bones.length;j++)
+		{
+			if(j==2 && finger == "thumb")
+				continue
+			curr_joint++
+			//Joint
+			scene.add(GRS[finger].joints[curr_joint].object)
+
+			//Bone
+			scene.add(GRS[finger].bones[curr_joint-1].object)
+
+
+		}
+	}
+}
+
+function animate(){
+	requestAnimationFrame(animate)
+	render()
+	
+	update()
+}
+
+function reset()
+{
+	for(i=0;i<objects.length;i++)
+	{
+		objects[i].position = jQuery.extend(true, {}, iobjects[i].position)
+	}
+}
+
+
+function pitch_finger(finger,angle)
+{
+	var axis = new THREE.Vector3(0,1,0)
+
+}
+
+function update(){
+	// fe[0].position.x += 1
+	var delta = clock.getDelta()
+
+	// GRS.index.joints[0].position.x = 0
+	// objects = get_all_objects()
+	axis = new THREE.Vector3(0,0,1)
+	// rotateAboutWorldAxis(objects[0],axis,0.1)
+
+
+	update_hand(0)
+	// redraw()
+	// cylinder.rotation.x = rotation["pitch"] 
+	// cylinder.rotation.y = rotation["heading"]
+	// cylinder.rotation.z = rotation["roll"] 
+
+	//console.log(delta)
+	
+	controls.update()
+	stats.update()
+}
+
+function rotateAboutWorldAxis(object, axis, angle) {
+  
+  var rotationMatrix = new THREE.Matrix4();
+  rotationMatrix.makeRotationAxis( axis.normalize(), angle );
+  var currentPos = new THREE.Vector4(object.position.x, object.position.y, object.position.z, 1);
+  var newPos = currentPos.applyMatrix4(rotationMatrix);
+  object.position.x = newPos.x;
+  object.position.y = newPos.y;
+  object.position.z = newPos.z;
+}
+
+function render(){
+	renderer.render(scene,camera)
+}
+
+function sin(x){
+	var alpha =  (x-90) * (Math.PI/180)
+	return Math.sin(alpha)
+}
+
+
+function cos(x){
+	var alpha = (x-90) * (Math.PI/180)
+	return Math.cos(alpha)
+}
+
+function rad(x)
+{
+	return x * (Math.PI/180)
+}
+
+function translate(obj,x,y,z)
+{
+	obj.position.x += x
+	obj.position.y += y
+	obj.position.z += z
+	return obj
+}
+
+function translate_all(x,y,z)
+{
+
+	for(i=0;i<objects.length;i++)
+	{
+		var obj = objects[i]
+		// console.log(obj.position.x)
+		obj = translate(obj,x,y,z)
+
+		objects[i].position = obj.position
+		// objects[i].position
+
+	}	
+}
+
+init()
+animate()
+
+var ws = new WebSocket ("ws://localhost:9090/ws")
+// var ws = new WebSocket ("ws://188.166.48.28:9090/ws")
+
+ws.onopen = function(){
+	console.log("Done")
+}
+
+ws.onmessage = function(e)
+{
+	
+// console.log(e.data)
+		if (e.data == "Init done")
+			return 
+		data = JSON.parse(e.data).data
+
+		q0 = data.wrist["acceleration-w"]
+		q1 = data.wrist["acceleration-x"]
+		q2 = data.wrist["acceleration-y"]
+		q3 = data.wrist["acceleration-z"]
+
+		// q0 = data.wrist["acceleration-w"]
+		// q2 = -data.wrist["acceleration-x"]
+		// q3 = -data.wrist["acceleration-y"]
+		// q1 = data.wrist["acceleration-z"]
+
+
+
+		heading = Math.atan2(2*q1*q2 - 2*q0*q3, 2*(q0*q0) + 2*(q1*q1) - 1) 
+		pitch = -Math.asin(2*q1*q3 + 2*q0*q2)
+		roll = Math.atan2(2*q2*q3 - 2*q0*q1, 2*(q0*q0) + 2*(q3*q3) - 1)
+		console.log(heading,pitch,roll)
+
+
+		// heading = data.thumb.heading
+		// pitch = data.thumb.pitch
+		// roll = data.thumb.roll
+		$("#info").text(pitch,pitch,roll)
+		
+
+		var vector;
+		for(i=0;i<objects.length;i++)
+		{
+			var obj = iobjects[i]
+
+			vector = new THREE.Vector3(obj.position.x,obj.position.y,obj.position.z)
+			var axis = new THREE.Vector3(0,1,0)
+			vector.applyAxisAngle(axis,-heading)
+
+			axis = new THREE.Vector3(1,0,0)
+			vector.applyAxisAngle(axis,-pitch)
+
+			axis = new THREE.Vector3(0,0,1)
+			vector.applyAxisAngle(axis,-roll)
+
+
+			objects[i].position.x = vector.x
+			objects[i].position.y = vector.y
+			objects[i].position.z = vector.z
+			
+			// update_hand(0)
+		}
+		//Ignore heading
+		curr_pivot = GRS.index.joints[1]
+		var v1 = new THREE.Vector3(heading_pivot.position.x,heading_pivot.position.y,heading_pivot.position.z).normalize()
+		var v2 = new THREE.Vector3(heading_pivot.position.x,heading_pivot.position.y,heading_pivot.position.z).normalize()
+		angle = v1.dot(v2)
+		var axis = new THREE.Vector3(0,1,0)
+		// rotate(axis,angle)
+	
+
+
+}
+
+
+ws.onclose = function()
+{
+	console.log("Closed")
+}
+</script>
+
+{% end %}
+
+{% block content %}
+
+<div id="info" style="position:absolute;right:100px;z-index:999"></div>
+<div id="ThreeJS" style="z-index: 1; position: absolute; left:0px; top:0px"></div>
+
+{% end %}

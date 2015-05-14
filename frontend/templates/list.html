@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% set axes = ['heading','pitch','roll'] %}
+{% set fingers = ['wrist','thumb','index','middle','ring','pinky'] %}
+{% set colors = {'heading':'green','pitch':'yellow','roll':'red'} %}
+
+<div class="row">
+            <div class="col-xs-12">
+              <div class="box">
+                <div class="box-header">
+                  <h3 class="box-title">Database</h3>
+                  <div class="box-tools">
+                    <div class="input-group">
+                      <input type="text" name="table_search" class="form-control input-sm pull-right" style="width: 150px;" placeholder="Search"/>
+                      <div class="input-group-btn">
+                        <button class="btn btn-sm btn-default"><i class="fa fa-search"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                </div><!-- /.box-header -->
+                <div class="box-body table-responsive no-padding">
+                  <table class="table table-hover">
+                    <tr>
+                      <th>Class</th>
+                      <th>Gesture</th>
+                      <th>No of training sets</th>
+                      <th>Status</th>
+                    </tr>
+                    {% for item in gestures %}
+	                    <tr>
+	                      <td>{{ item['class'] }}</td>
+	                      <td>{{ item['name'] }}</td>
+	                      <td>{{ len(item['training_data']) }}</td>
+	                      {% if item['trained'] == True %}
+	                      	<td><span class="label label-success">Trained</span></td>
+	                      {% else %}
+	                      	<td><span class="label label-danger">Not trained yet</span></td>
+	                      {% end %}
+	                    </tr>
+	                {% end %}
+                  </table>
+                </div><!-- /.box-body -->
+              </div><!-- /.box -->
+            </div>
+            <button class="btn btn-block btn-primary btn-lg" style="width:100px;float:right;margin-right:30px;" id="train">Train!</button>
+</div>
+
+{% end %}
+
+{% block script %}
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#train").click(function(){
+		$(this).text("Training...")
+		$.post("/train",{},function(data){
+			$("#train").text("Done!")
+			$("#train").attr("class","btn btn-block btn-success btn-lg")
+		})
+	})
+})	
+
+</script>
+{% end %}

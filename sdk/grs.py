@@ -10,6 +10,7 @@ import sys
 from subprocess import Popen, PIPE
 mem = redis.StrictRedis(host='localhost', port=6379, db=0)
 
+
 class GRS(object):
 	def __init__(self,db="grs"):
 		self.conn = pymongo.MongoClient()
@@ -32,8 +33,9 @@ class GRS(object):
 		data = dict(
 			name = name,
 			training_data = training_data,
+			trained = False
 			)
-		data["class"] = self.db.gestures.find().count()
+		data["class"] = self.db.gestures.find().count()+1
 		self.db.gestures.insert(data)
 		return fx.gen_result(0,"Gesture added")
 
@@ -84,15 +86,60 @@ class GRS(object):
 		sys.stdout.flush()
 
 
+	def prepare_training_set(self):
+		K = self.db.gestures.count()
+		data = list(self.db.gestures.find())
+		f = open('nn/dataNN.dat','w')
+		for item in data:
+			for tr in item["training_data"]:
+				f.write(tr+" "+str(item["class"])+"\n")
+
+
+	def train(self):
+		os.chdir("nn")
+		cmd = "octave train.m".split()
+		proc = Popen(cmd,stdout=PIPE)
+		out,err = proc.communicate()
+		os.chdir("../")
+		self.db.gestures.update({},{"$set":{"trained":True}},multi=True)
+
+	def predict(self):
+		os.chdir("nn")
+		data = self.get_raw_data()
+		if not data:
+			print "No data"
+			return 
+		data  = data.replace(";"," ").split(" ")
+		# print data
+		data = [x for x in data[-4:]]
+		f = open('X.txt',"w")
+		f.write(" ".join(data))
+		f.close()
+		cmd = "octave predict_direct.m".split()
+		proc = Popen(cmd,stdout=PIPE)
+		out,err = proc.communicate()
+		os.chdir("../")
+		result = open("nn/result.dat","r").readlines()
+		# print result
+		return int(result[-3].replace('\n',''))
+
+	def get_gesture(self,id):
+		return self.db.gestures.find_one({"class":id})["name"]
+
+
 
 #os.chdir(aPath)
 print os.getcwd()
 
 
 if __name__ == "__main__":
+	import time
 	grs = GRS()
-	name = "point2"
-	training_data = []
-	print grs.add_gesture(name,training_data)
-	while(1):
-		grs.point(100)
+	# grs.prepare_training_set()
+	# grs.train()
+	while True:
+		p = grs.predict()
+		print p,
+		gesture = grs.db.gestures.find_one({"class":p})
+		print gesture['name']
+		# time.sleep(0.3)

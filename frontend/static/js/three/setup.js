@@ -1,9 +1,9 @@
-function setup()
+function setup(width,height)
 {
 			// Setup camera
 		scene = new THREE.Scene()
-		var SCREEN_WIDTH = window.innerWidth,
-			SCREEN_HEIGHT = window.innerHeight,
+		var SCREEN_WIDTH = width,
+			SCREEN_HEIGHT = height,
 			VIEW_ANGLE = 45,
 			ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT ,
 			NEAR = 0.1,
@@ -38,7 +38,7 @@ function setup()
 		stats.domElement.style.position = 'absolute'
 		stats.domElement.style.bottom = '0px'
 		stats.domElement.style.zIndex = 100
-		container.appendChild(stats.domElement)
+		// container.appendChild(stats.domElement)
 
 		// Light
 		light = new THREE.DirectionalLight(0xffffff);

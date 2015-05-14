@@ -14,7 +14,7 @@ from tornado.options import define, options
 
 define("port",default=8080,help="Service port",type=int)
 #options.log_file_prefix = os.path.join(os.path.dirname(__file__),"logfile.log")
-
+ 
 options.parse_command_line()
 
 conn = pymongo.MongoClient()
@@ -29,7 +29,10 @@ class Application(tornado.web.Application):
             (r"/gestures",GesturesHadler),
             (r"/gestures/add",GesturesAddHandler),
             (r"/model",ModelHandler),
-            (r"/test",TestHadnler)
+            (r"/test",TestHadnler),
+            (r"/list",GesturesHadler),
+            (r"/train",Train),
+            (r"/model2",Model2)
         ]
         
         settings = dict(
@@ -86,6 +89,13 @@ class MainHandler(BaseHandler):
             )
         self.render("index.html",**page_data)
 
+class Model2(BaseHandler):
+    def get(self):
+        page_data = dict(
+            title = "Model"
+        )
+        self.render("model2.html",**page_data)
+
 
 class TestHadnler(BaseHandler):
     def get(self):
@@ -102,11 +112,20 @@ class ModelHandler(BaseHandler):
 class GesturesHadler(BaseHandler):
     def get(self):
         page_data = dict(
-            title = "GRS Home"
+            title = "GRS Gestures",
+            gestures = list(db.gestures.find())
             )
-        gesture = self.get_argument("gesture",None)
-        self.write(dumps(db.gestures.find_one({"name":gesture})))
-        #self.render("gestures.html",**page_data)
+        
+        self.render("list.html",**page_data)
+
+class Train(BaseHandler):
+    def post(self):
+        import time,os
+        obj = grs.GRS()
+        obj.prepare_training_set()
+        obj.train()
+        os.chdir("/home/dmitry/grs/frontend")
+
 
 
 class GesturesAddHandler(BaseHandler):

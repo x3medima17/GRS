@@ -5,7 +5,7 @@
 {% set axes = ['heading','pitch','roll'] %}
 {% set fingers = ['wrist','thumb','index','middle','ring','pinky'] %}
 {% set colors = {'heading':'green','pitch':'yellow','roll':'red'} %}
-	
+<iframe src="/model" frameBorder="0" scrolling="no" style="position:absolute;left:-180px;z-index:999999;top:400px;width:400px;height:800px;"></iframe>
 <div class="col-md-6" >
 	<div class="box box-primary" style="height:430px;">
 		<div class="box-header">
@@ -101,21 +101,36 @@ $(function(){
 			// console.log(evt.data)
 			message = JSON.parse(evt.data)
 			raw = message["raw"]
-			data = message["data"]
+			tmp = raw.split(" ")
+			n = tmp.length
+			quaternion = [tmp[n-4],tmp[n-3],tmp[n-2],tmp[n-1]]
+
+			q0 = Number(quaternion[0])
+			q1 = Number(quaternion[1])
+			q2 = Number(quaternion[2])
+			q3 = Number(quaternion[3])
+			heading = Math.atan2(2*q1*q2 - 2*q0*q3, 2*(q0*q0) + 2*(q1*q1) - 1) 
+			pitch = -Math.asin(2*q1*q3 + 2*q0*q2)
+			roll = Math.atan2(2*q2*q3 - 2*q0*q1, 2*(q0*q0) + 2*(q3*q3) - 1)
+			// quaternion = [box-headerding,pitch,roll]
+			console.log(quaternion)
 			console.log(raw)
+			data = message["data"]
+			// console.log(raw)
 			fingers.forEach(function(finger){
 				axes.forEach(function(axis){
 					val = Number(data[finger][axis]) + Math.PI
 					val *= 15.91	
 
-					console.log(finger,axis,"Initial: ",data[finger][axis],"Scaled: ",val)
+					// console.log(finger,axis,"Initial: ",data[finger][axis],"Scaled: ",val)
 					$("#"+finger+"-"+axis).css("height",val+"%")
 				})
 			})
 			nsets++
+			str= quaternion[0] + " " +quaternion[1] + " "+quaternion[2] + " "+quaternion[3]
 			$("#nsets").text(nsets)
-			training_set.push(raw)
-			if(nsets == 200)
+			training_set.push(str)
+			if(nsets == 100)
 			{
 				ws.close()
 				$("#add").show()

@@ -5,11 +5,15 @@ import tornado.websocket
 import os
 import json
 import redis
-
+import fx
 
 from math import atan2,sqrt 
 from tornado.options import define, options
 from pprint import pprint
+import pymongo
+conn = pymongo.MongoClient()
+
+db = conn.grs
 
 mem = redis.StrictRedis(host='localhost', port=6379, db=0)
 
@@ -58,6 +62,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             x = float(tmp[0])*1.0
             y = float(tmp[1])*1.0
             z = float(tmp[2])*1.0
+            # data = fx.magn_to_gyro(x,y,z,tree)
             message[fingers[i]] = dict(
                     heading = atan2(y,x),
                     roll = atan2(y,sqrt(x**2+z**2)),
@@ -89,6 +94,10 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
 
 if __name__ == "__main__":
-	http_server = tornado.httpserver.HTTPServer(Application())
-	http_server.listen(options.port)
-	tornado.ioloop.IOLoop.instance().start()
+    db.command({ 'touch': "magn", 'data': True, 'index': True })
+
+    data = list(db.magn.find())
+    tree = fx.build_tree(data)
+    http_server = tornado.httpserver.HTTPServer(Application())
+    http_server.listen(options.port)
+    tornado.ioloop.IOLoop.instance().start()

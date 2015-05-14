@@ -87,7 +87,7 @@ function animate(){
 }
 
 function update(){
-	var axis = new THREE.Vector3(0,1,0)
+	var axis = new THREE.Vector3(1,1,0)
 	var vector = new THREE.Vector3(0,0,-1)
 	alpha += 0.01 
 	scale = 100
@@ -115,6 +115,8 @@ function rotateAboutWorldAxis(object, axis, angle) {
   object.position.y = newPos.y;
   object.position.z = newPos.z;
 }
+
+
 function render(){
 	renderer.render(scene,camera)
 }
@@ -182,8 +184,6 @@ function open_ws(source)
 		q3 = data.wrist["acceleration-z"]
 
 		
-		quaternion.set(q0,q1,q2,q3)
-		
 		console.log(q0,q1,q2,q3)
 
 
@@ -191,16 +191,21 @@ function open_ws(source)
 		pitch = -Math.asin(2*q1*q3 + 2*q0*q2)
 		roll = Math.atan2(2*q2*q3 - 2*q0*q1, 2*(q0*q0) + 2*(q3*q3) - 1)
 
+
+		heading = data.thumb.heading
+		pitch = data.thumb.pitch
+		roll = data.thumb.roll
+
 		vector = new THREE.Vector3(0,0,1)
 
-		var axis = new THREE.Vector3(0,1,0)
+		var axis = new THREE.Vector3(1,0,0)
 		vector.applyAxisAngle(axis,-heading)
 
 		axis = new THREE.Vector3(1,0,0)
-		vector.applyAxisAngle(axis,-pitch)
+		// vector.applyAxisAngle(axis,pitch)
 
 		axis = new THREE.Vector3(0,0,1)
-		vector.applyAxisAngle(axis,-roll)
+		// vector.applyAxisAngle(axis,roll)
 
 		vector.x *= scale
 		vector.y *= -scale
